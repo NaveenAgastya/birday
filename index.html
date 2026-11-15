@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Museum of Memories & Wishes | Happy Birthday</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- External 3D & Animation Engines -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- WebGL 3D Canvas Container -->
+    <div id="webgl-container"></div>
+
+    <!-- Vignette & Cinematic Grain Overlay -->
+    <div class="cinematic-vignette"></div>
+
+    <!-- Top Navigation & Museum Branding -->
+    <header class="museum-header">
+        <div class="brand">
+            <span class="museum-icon">🏛️</span>
+            <div>
+                <h1 class="museum-title">MUSEUM OF MEMORIES</h1>
+                <p class="museum-subtitle" id="header-subtitle">Curated for <span class="highlight-name" id="sister-name-display">Sister</span>'s Birthday</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <!-- Audio toggle button -->
+            <button id="btn-audio" class="glass-btn" title="Toggle Magical Ambient Music">
+                <span id="audio-icon">🎵</span> <span id="audio-label">Music: Off</span>
+            </button>
+            <!-- Birthday Surprise Confetti -->
+            <button id="btn-celebrate" class="glass-btn highlight-btn" title="Celebrate with Birthday Sparkles!">
+                <span>✨ Celebrate</span>
+            </button>
+            <!-- Open Wish Form -->
+            <button id="btn-open-wish" class="glass-btn primary-btn">
+                <span>💌 Leave a Wish</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- On-screen Toast Notification -->
+    <div id="toast-notification" class="toast-notification"></div>
+
+    <!-- Center Welcome Screen / Entrance Gate -->
+    <div id="entrance-gate" class="entrance-modal visible">
+        <div class="entrance-card">
+            <div class="crown-badge">👑 SPECIAL BIRTHDAY EXHIBITION 👑</div>
+            <h2 id="entrance-title">Happy Birthday, <span class="highlight-gradient" id="welcome-name">Sister</span>!</h2>
+            <p class="entrance-desc">
+                Step inside the 3D Grand Hall of Memories. Walk among the golden galleries of your most cherished moments, milestones, and heartfelt wishes from everyone who loves you.
+            </p>
+            <div class="entrance-buttons">
+                <button id="btn-start-tour" class="btn-royal">
+                    <span>🚀 Start 3D Guided Tour</span>
+                </button>
+                <button id="btn-free-roam" class="btn-ghost">
+                    <span>🖐️ Free Roam / Explore</span>
+                </button>
+            </div>
+            <div class="entrance-tip">Tip: Click any photo frame in 3D to travel directly to it. Drag to look around!</div>
+        </div>
+    </div>
+
+    <!-- Active Exhibit Spotlight Card (Slides in when camera arrives at an exhibit) -->
+    <div id="exhibit-card" class="exhibit-info-panel">
+        <div class="exhibit-badge" id="exhibit-number">EXHIBIT #1</div>
+        <h3 id="exhibit-title" class="exhibit-heading">Memory Title</h3>
+        <div class="exhibit-meta">
+            <span class="exhibit-date" id="exhibit-date">📅 2024</span>
+            <span class="exhibit-tag" id="exhibit-tag">Family</span>
+        </div>
+        <p id="exhibit-desc" class="exhibit-text">A memorable moment captured forever in time...</p>
+        <div class="exhibit-actions">
+            <button id="btn-view-large" class="small-glass-btn">🔍 View Full Photo</button>
+            <button id="btn-next-exhibit" class="small-glass-btn primary-glass">Next Memory ➔</button>
+        </div>
+    </div>
+
+    <!-- Fullscreen Photo Lightbox Modal -->
+    <div id="photo-modal" class="photo-modal">
+         <div class="photo-modal-backdrop" id="photo-modal-close-backdrop"></div>
+        <div class="photo-modal-content">
+            <button class="modal-close-btn" id="btn-close-photo">✕</button>
+            <img id="photo-modal-img" src="" alt="Full view memory">
+            <div class="photo-modal-caption">
+                <h4 id="photo-modal-title"></h4>
+                <p id="photo-modal-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Wish Sanctuary Modal / Form -->
+    <div id="wish-modal" class="wish-modal">
+        <div class="wish-modal-backdrop" id="wish-modal-close-backdrop"></div>
+        <div class="wish-modal-container">
+            <button class="modal-close-btn" id="btn-close-wish">✕</button>
+            <div class="wish-modal-header">
+                <span class="wish-icon">🕯️</span>
+                <h3>Release a 3D Wish Lantern</h3>
+                <p>Your message will transform into a glowing sky lantern floating inside the 3D museum ceiling forever!</p>
+            </div>
+
+            <form id="wish-form">
+                <div class="form-group">
+                    <label for="wish-author">Your Name / Nickname</label>
+                    <input type="text" id="wish-author" placeholder="e.g. Best Brother, Mom, Alex..." required maxlength="40">
+                </div>
+                <div class="form-group">
+                    <label for="wish-color">Choose Lantern Glow Color</label>
+                    <div class="color-picker-row">
+                        <label class="color-option">
+                            <input type="radio" name="lantern-color" value="#ffb703" checked>
+                            <span class="color-swatch" style="background: #ffb703;" title="Golden Warmth"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="lantern-color" value="#ff006e">
+                            <span class="color-swatch" style="background: #ff006e;" title="Rose Pink"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="lantern-color" value="#8338ec">
+                            <span class="color-swatch" style="background: #8338ec;" title="Royal Violet"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="lantern-color" value="#3a86ff">
+                            <span class="color-swatch" style="background: #3a86ff;" title="Celestial Blue"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="lantern-color" value="#06d6a0">
+                            <span class="color-swatch" style="background: #06d6a0;" title="Emerald Hope"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wish-message">Your Birthday Wish & Memory Message</label>
+                    <textarea id="wish-message" rows="4" placeholder="Write something sweet, funny, or emotional for her special day..." required maxlength="300"></textarea>
+                </div>
+                <button type="submit" class="btn-royal full-width" id="btn-submit-wish">
+                    <span>✨ Release Lantern into 3D Sky</span>
+                </button>
+            </form>
+
+            <div class="recent-wishes-section">
+                <h4>Recent Wishes Released (<span id="wish-count">0</span>)</h4>
+                <div id="wishes-list" class="wishes-scroll-list">
+                    <!-- Dynamic wishes loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Wish Detail Popup (When clicking a 3D floating lantern) -->
+    <div id="lantern-popup" class="lantern-popup">
+        <div class="lantern-popup-glow"></div>
+        <div class="lantern-popup-body">
+            <span class="lantern-tag">🏮 FLOATING WISH LANTERN</span>
+            <p id="lantern-wish-text" class="lantern-text">"Wishing you endless happiness..."</p>
+            <div class="lantern-author-line">
+                — <span id="lantern-wish-author">Someone Special</span>
+            </div>
+            <button class="small-glass-btn" id="btn-close-lantern">Close</button>
+        </div>
+    </div>
+
+    <!-- 🎂 Interactive Birthday Cake Blowing Prompt (Appears when arriving at the Cake Altar) -->
+    <div id="cake-prompt-card" class="cake-prompt-card">
+        <div class="cake-badge">🎂 SPECIAL BIRTHDAY MOMENT</div>
+        <h3>Make a Secret Wish! 🕯️</h3>
+        <p>The candles are lit! Close your eyes, make your deepest wish, and blow them out!</p>
+        <div class="cake-action-btns">
+            <button id="btn-blow-candles" class="btn-royal blow-btn">
+                <span>💨 Blow Out the Candles!</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 💖 Warm Birthday Wish Letter (Appears right after blowing out candles) -->
+    <div id="celebration-letter-modal" class="celebration-letter-modal">
+        <div class="letter-modal-backdrop" id="letter-modal-backdrop"></div>
+        <div class="letter-card">
+            <button class="modal-close-btn" id="btn-close-letter">✕</button>
+            <div class="letter-header">
+                <span class="letter-crown">👑</span>
+                <h2>Happy Birthday, Sister! 🎂✨</h2>
+                <div class="letter-subtitle">Your wish has been carried to the stars</div>
+            </div>
+            <div class="letter-body">
+                <p class="letter-highlight">
+                    "From our childhood steps holding hands, to all the laughs, sweet treats, and years of growing up together — having you as my sister is one of life’s greatest blessings."
+                </p>
+                <p>
+                    May this new year bring you boundless happiness, blooming health, glowing smiles, and every single dream you carry in your heart. You deserve the entire world and so much more!
+                </p>
+                <div class="letter-signoff">
+                    With endless love & blessings,<br>
+                    <strong>Your Brother ❤️</strong>
+                </div>
+            </div>
+            <div class="letter-actions">
+                <button id="btn-re-celebrate" class="glass-btn highlight-btn">
+                    <span>✨ Celebrate Again</span>
+                </button>
+                <button id="btn-relight-candles" class="glass-btn">
+                    <span>🕯️ Blow Again</span>
+                </button>
+                <button id="btn-open-wishes-from-letter" class="btn-royal">
+                    <span>💌 View & Release Wish Lanterns</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation & Museum Tour Controls HUD -->
+    <footer class="museum-hud">
+        <div class="hud-left">
+            <button id="btn-prev" class="hud-nav-btn" title="Previous Exhibit">◀</button>
+            <div class="hud-current-info">
+                <span class="hud-counter" id="hud-index-display">0 / 0</span>
+                <span class="hud-label" id="hud-title-display">Museum Entrance</span>
+            </div>
+            <button id="btn-next" class="hud-nav-btn" title="Next Exhibit">▶</button>
+            <button id="btn-auto-tour-toggle" class="hud-btn" title="Auto Tour Play/Pause">
+                <span id="tour-play-icon">▶</span> <span id="tour-play-text">Auto Tour</span>
+            </button>
+        </div>
+
+        <!-- Quick Jump Navigation Thumbnails / Waypoints -->
+        <div class="hud-waypoints" id="waypoints-container">
+            <!-- Injected via JavaScript -->
+        </div>
+
+        <div class="hud-right">
+            <div class="instructions-pill">
+                <span>🖱️ Drag to look | Click frames to visit</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript Code -->
+    <script src="main.js"></script>
+</body>
+</html>
